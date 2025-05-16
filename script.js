@@ -21,6 +21,7 @@ const cvData = {
         ["Layihə", "Universitet tərkibində layihələrdə iştirak etmişəm"]
     ]
 };
+
 function renderCV() {
     const container = document.getElementById("cvSections");
     container.innerHTML = "";
@@ -95,91 +96,3 @@ function saveEntry(section, index) {
 }
 
 document.addEventListener("DOMContentLoaded", renderCV);
-// 1. LocalStorage-dən oxuma
-document.addEventListener("DOMContentLoaded", () => {
-    const savedData = localStorage.getItem('cvData');
-    if (savedData) {
-        Object.assign(cvData, JSON.parse(savedData));
-    }
-    renderCV();
-});
-
-// 2. Validation funksiyası
-function validateEntry(section, key, value) {
-    if (!key.trim() || !value.trim()) {
-        return "Boş sahələr yolverilməzdir.";
-    }
-
-    if (section === "Şəxsi məlumatlar") {
-        if (key.toLowerCase().includes("ad soyad")) {
-            // Ad Soyad yalnız hərflərdən ibarət olmalıdır (space daxil olmaqla)
-            const nameRegex = /^[A-Za-zƏəÖöÜüĞğİıŞşÇç\s]+$/u;
-            if (!nameRegex.test(value)) {
-                return "Ad Soyad sahəsində yalnız hərflər və boşluq ola bilər.";
-            }
-        }
-
-        if (key.toLowerCase().includes("telefon")) {
-            // Telefon nömrəsi formatı: +994XXXXXXXXX (yəni +994 + 9 rəqəm)
-            const phoneRegex = /^\+994\d{9}$/;
-            if (!phoneRegex.test(value)) {
-                return "Telefon nömrəsi +994XXXXXXXXX formatında olmalıdır.";
-            }
-        }
-
-        if (key.toLowerCase().includes("e-poçt")) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(value)) {
-                return "Zəhmət olmasa düzgün e-poçt daxil edin.";
-            }
-        }
-    }
-
-    return null; // səhv yoxdur
-}
-
-// 3. saveEntry funksiyasını yenilə
-function saveEntry(section, index) {
-    const table = document.querySelectorAll(".section")[Object.keys(cvData).indexOf(section)]
-        .querySelector("table");
-    const row = table.rows[index + 1];
-    const keyCell = row.cells[0];
-    const valueCell = row.cells[1];
-
-    // Xəta mesajı varsa əvvəlcə varsa sil
-    let errorMsg = row.querySelector(".error-msg");
-    if (errorMsg) errorMsg.remove();
-
-    const key = keyCell.innerText;
-    const value = valueCell.innerText;
-
-    const error = validateEntry(section, key, value);
-    if (error) {
-        // Xəta mesajını göstər
-        const errSpan = document.createElement("span");
-        errSpan.className = "error-msg";
-        errSpan.style.color = "red";
-        errSpan.textContent = error;
-        valueCell.appendChild(errSpan);
-        return; // yadda saxlamırıq
-    }
-
-    // Yadda saxla və localStorage-a yaz
-    cvData[section][index] = [key, value];
-    localStorage.setItem('cvData', JSON.stringify(cvData));
-}
-
-// 4. addEntry funksiyasında da localStorage-a yaz
-function addEntry(section) {
-    cvData[section].push(["Yeni başlıq", "Yeni təsvir"]);
-    localStorage.setItem('cvData', JSON.stringify(cvData));
-    renderCV();
-}
-
-// 5. deleteEntry funksiyasında da localStorage-a yaz
-function deleteEntry(section, index) {
-    cvData[section].splice(index, 1);
-    localStorage.setItem('cvData', JSON.stringify(cvData));
-    renderCV();
-}
-localStorage.setItem('cvData', JSON.stringify(cvData));
